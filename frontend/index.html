@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jira Crypto Exchange</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-30 shadow-lg">
+    <div class="flex items-center space-x-3">
+      <div class="bg-indigo-600 p-2.5 rounded-xl shadow-indigo-600/30 shadow-lg">
+        <i class="fa-solid fa-bolt text-white text-lg"></i>
+      </div>
+      <span class="text-xl font-bold tracking-tight text-white">Jira<span class="text-indigo-400">Crypto</span></span>
+    </div>
+    <div class="flex items-center space-x-4">
+      <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1.5 rounded-full flex items-center gap-2 font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Postgres Connected
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Scrollable Dashboard -->
+  <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8 overflow-y-auto">
+
+    <!-- Top Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-gradient-to-tr from-indigo-900/60 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <p class="text-xs text-indigo-300 font-semibold uppercase tracking-wider">Total Net Worth</p>
+        <h2 id="netWorth" class="text-4xl font-extrabold mt-2 text-white">$0.00</h2>
+        <p class="text-xs text-slate-400 mt-4">Cash + Crypto Valuation</p>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-md">
+        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Available Cash (USD)</p>
+        <h2 id="cashBalance" class="text-3xl font-bold mt-2 text-emerald-400">$0.00</h2>
+        <p class="text-xs text-slate-500 mt-4">Ready for Instant Trading</p>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-md">
+        <p class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Crypto Assets Value</p>
+        <h2 id="cryptoValue" class="text-3xl font-bold mt-2 text-indigo-400">$0.00</h2>
+        <p class="text-xs text-slate-500 mt-4">Live Market Valued</p>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-area text-indigo-400"></i> Market Price Trends
+        </h3>
+        <select id="coinSelector" onchange="updateChart(this.value)" class="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-3 py-1.5 focus:outline-none">
+          <option value="BTC">Bitcoin (BTC)</option>
+          <option value="ETH">Ethereum (ETH)</option>
+          <option value="SOL">Solana (SOL)</option>
+        </select>
+      </div>
+      <div class="h-[280px] relative w-full">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Middle Section: Market Rates & Portfolio Holdings -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Market Prices & Quick Trade Execution -->
+      <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md flex flex-col justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-coins text-indigo-400"></i> Market Rates & Quick Trade
+          </h3>
+          <div id="marketGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Holdings Distribution -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md space-y-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-wallet text-indigo-400"></i> Portfolio Holdings
+        </h3>
+        <div id="holdingsList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Scrollable Transaction History -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md space-y-4">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Trade History Audit Log
+        </h3>
+        <button onclick="loadData()" class="text-indigo-400 hover:text-indigo-300 text-xs flex items-center gap-1 font-medium">
+          <i class="fa-solid fa-rotate"></i> Sync Data
+        </button>
+      </div>
+      <div id="txnLog" class="space-y-3 max-h-[350px] overflow-y-auto pr-2">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_BASE = 'http://' + window.location.hostname + ':3000';
+    let priceChartInstance = null;
+
+    const HISTORICAL_DATA = {
+      BTC: [61200, 62100, 61800, 63400, 62900, 63800, 64250],
+      ETH: [3200, 3280, 3250, 3390, 3350, 3410, 3450],
+      SOL: [132, 138, 135, 141, 139, 143, 145.50]
+    };
+
+    const CHART_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    function initPriceChart(symbol = 'BTC') {
+      const ctx = document.getElementById('priceChart').getContext('2d');
+      
+      const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+      gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+      if (priceChartInstance) {
+        priceChartInstance.destroy();
+      }
+
+      priceChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: CHART_LABELS,
+          datasets: [{
+            label: `${symbol} Price ($)`,
+            data: HISTORICAL_DATA[symbol],
+            borderColor: '#6366f1',
+            borderWidth: 2,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#818cf8',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleColor: '#f8fafc',
+              bodyColor: '#818cf8',
+              borderColor: '#334155',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { 
+                color: '#94a3b8',
+                callback: (val) => '$' + val.toLocaleString()
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateChart(symbol) {
+      initPriceChart(symbol);
+    }
+
+    async function loadData() {
+      try {
+        const [portRes, txnRes] = await Promise.all([
+          fetch(`${API_BASE}/api/portfolio`),
+          fetch(`${API_BASE}/api/transactions`)
+        ]);
+
+        const portfolio = await portRes.json();
+        const txns = await txnRes.json();
+
+        // Update Overview Totals
+        document.getElementById('netWorth').innerText = `$${portfolio.netWorth.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('cashBalance').innerText = `$${portfolio.usdBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+        document.getElementById('cryptoValue').innerText = `$${portfolio.cryptoTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+        // Render Market Rates
+        const marketGrid = document.getElementById('marketGrid');
+        marketGrid.innerHTML = '';
+        Object.entries(portfolio.marketPrices).forEach(([sym, price]) => {
+          marketGrid.innerHTML += `
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex justify-between items-center">
+              <div>
+                <p class="font-bold text-white">${sym}</p>
+                <p class="text-xs text-slate-400">$${price.toLocaleString()}</p>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="executeTrade('BUY', '${sym}', ${price})" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-semibold">Buy</button>
+                <button onclick="executeTrade('SELL', '${sym}', ${price})" class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-semibold">Sell</button>
+              </div>
+            </div>
+          `;
+        });
+
+        // Render Holdings
+        const holdingsList = document.getElementById('holdingsList');
+        holdingsList.innerHTML = '';
+        portfolio.holdings.forEach(h => {
+          holdingsList.innerHTML += `
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div>
+                <p class="text-sm font-semibold text-white">${h.name} (${h.symbol})</p>
+                <p class="text-xs text-slate-400">${h.amount.toFixed(4)} ${h.symbol}</p>
+              </div>
+              <p class="font-mono text-sm font-bold text-indigo-400">$${h.totalValue.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+            </div>
+          `;
+        });
+
+        // Render Transaction Audit Log
+        const txnLog = document.getElementById('txnLog');
+        txnLog.innerHTML = '';
+        if(txns.length === 0) {
+          txnLog.innerHTML = `<p class="text-slate-500 text-center py-4 text-sm">No recent trades executed.</p>`;
+        } else {
+          txns.forEach(t => {
+            const isBuy = t.type === 'BUY';
+            const badge = isBuy ? 'bg-emerald-950 text-emerald-400 border-emerald-800' : 'bg-rose-950 text-rose-400 border-rose-800';
+            txnLog.innerHTML += `
+              <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-3">
+                  <span class="px-2.5 py-1 rounded-md text-xs font-bold border ${badge}">${t.type}</span>
+                  <div>
+                    <p class="font-medium text-white">${t.amount} ${t.symbol} @ $${parseFloat(t.price).toLocaleString()}</p>
+                    <p class="text-xs text-slate-500">${new Date(t.timestamp).toLocaleString()}</p>
+                  </div>
+                </div>
+                <span class="font-mono font-bold text-white">$${parseFloat(t.total).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+              </div>
+            `;
+          });
+        }
+
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      }
+    }
+
+    async function executeTrade(type, symbol, price) {
+      const amountStr = prompt(`Enter amount of ${symbol} to ${type}:`, "0.1");
+      if (!amountStr) return;
+      const amount = parseFloat(amountStr);
+      if (isNaN(amount) || amount <= 0) return alert("Invalid amount!");
+
+      try {
+        const res = await fetch(`${API_BASE}/api/trade`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, symbol, coinName: symbol, amount })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        loadData();
+      } catch (err) {
+        alert(`Trade Failed: ${err.message}`);
+      }
+    }
+
+    // Initial load
+    initPriceChart('BTC');
+    loadData();
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Container
+  db:
+    image: postgres:15-alpine
+    container_name: jira-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret123
+      POSTGRES_DB: jiradb
+    ports:
+      - "5432:5432"
+    volumes:
+      - jira_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+
+  # 2. Node.js Express API Container
+  backend:
+    build: ./backend
+    container_name: jira-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: secret123
+      DB_NAME: jiradb
+    depends_on:
+      - db
+    restart: always
+
+  # 3. Nginx Static Frontend Container
+  frontend:
+    image: nginx:alpine
+    container_name: jira-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/index.html:/usr/share/nginx/html/index.html
+    restart: always
+
+volumes:
+  jira_postgres_data:
